@@ -1,40 +1,87 @@
-import React, { useState } from 'react';
-import { StyleSheet, TextInput, View, TouchableOpacity, Text } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import React, {useState,useEffect} from 'react';
+import {
+  StyleSheet,
+  TextInput,
+  View,
+  TouchableOpacity,
+  Text,
+} from 'react-native';
+import {useNavigation} from '@react-navigation/native';
+import {login} from '../api/login';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 const LoginScreen = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const navigation = useNavigation();
-  const handleLogin = () => {
-    alert(`用户名: ${username}, 密码: ${password}`);
+  useEffect(() => {
+    const fetchUID = async () => {
+      const uid = await getData();
+      if (uid) {
+        navigation.navigate('Main');
+      }
+    }
+    console.log('页面已加载');
+    fetchUID(); // 调用这个异步函数
+
+    return () => {
+      console.log('清理');
+      // 在这里进行任何需要的清理操作，
+      // 这个函数会在组件卸载时执行，
+      // 类似于 class 组件的 componentWillUnmount 生命周期方法。
+    };
+  }, []);
+  const handleLogin = async () => {
+    try {
+      const result = await login(username, password);
+      console.log(result.uid);
+      storeData(result.uid)
+      navigation.navigate('Main');
+    } catch (err) {
+      console.log(err);
+    }
   };
   const goregister = () => {
     navigation.navigate('Register'); // 跳转到register页面
-  }
+  };
+  const storeData = async value => {
+    try {
+      const jsonValue = JSON.stringify(value);
+      await AsyncStorage.setItem('@storage_Key', jsonValue);
+    } catch (e) {
+      // 保存出错
+    }
+  };
+
+  // 读取数据
+  const getData = async () => {
+    try {
+      const jsonValue = await AsyncStorage.getItem('@storage_Key');
+      return jsonValue != null ? JSON.parse(jsonValue) : null;
+    } catch (e) {
+      return null
+    }
+  };
   return (
     <View style={styles.container}>
-       <Text  style={styles.title}>登录</Text>
+      <Text style={styles.title}>登录</Text>
       <TextInput
         value={username}
-        onChangeText={(username) => setUsername(username)}
+        onChangeText={username => setUsername(username)}
         placeholder={'用户名'}
         style={styles.input}
       />
       <TextInput
         value={password}
-        onChangeText={(password) => setPassword(password)}
+        onChangeText={password => setPassword(password)}
         placeholder={'密码'}
         secureTextEntry={true}
         style={styles.input}
       />
-      <TouchableOpacity 
-        style={styles.buttonContainer} 
-        onPress={handleLogin}>
+      <TouchableOpacity style={styles.buttonContainer} onPress={handleLogin}>
         <Text style={styles.buttonText}>登录</Text>
       </TouchableOpacity>
-      <TouchableOpacity 
-        style={styles.buttonContainer2} 
-        onPress={goregister}>
+      <TouchableOpacity style={styles.buttonContainer2} onPress={goregister}>
         <Text style={styles.buttonText2}>注册</Text>
       </TouchableOpacity>
     </View>
@@ -60,33 +107,33 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     elevation: 8,
-    backgroundColor: "#009688",
+    backgroundColor: '#009688',
     borderRadius: 10,
     paddingVertical: 10,
     paddingHorizontal: 12,
     marginBottom: 10,
-    width:100,
+    width: 100,
   },
   buttonContainer2: {
     elevation: 8,
-    backgroundColor: "white",
+    backgroundColor: 'white',
     borderRadius: 10,
     paddingVertical: 10,
     paddingHorizontal: 12,
     marginBottom: 10,
-    width:100,
+    width: 100,
   },
   buttonText: {
     color: '#fff',
     fontWeight: 'bold',
     alignSelf: 'center',
-    textTransform: 'uppercase'
+    textTransform: 'uppercase',
   },
   buttonText2: {
     color: 'black',
     fontWeight: 'bold',
     alignSelf: 'center',
-    textTransform: 'uppercase'
+    textTransform: 'uppercase',
   },
   title: {
     margin: 5,
@@ -101,5 +148,5 @@ const styles = StyleSheet.create({
 });
 
 function alert(arg0: string) {
-    throw new Error('Function not implemented.');
+  throw new Error('Function not implemented.');
 }

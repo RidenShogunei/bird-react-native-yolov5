@@ -7,13 +7,32 @@ import {
   Text,
 } from 'react-native';
 import {useNavigation} from '@react-navigation/native';
+import {login, register} from '../api/login';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 const LoginScreen = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [realname, setRealname] = useState('');
   const navigation = useNavigation();
-  const handleregister = () => {
-    alert(`用户名: ${username}, 密码: ${password}`);
+  const storeData = async (value) => {
+    try {
+      await AsyncStorage.setItem('@storage_Key', value)
+    } catch (e) {
+      // 保存出错
+    }
+  }
+  const handleregister = async () => {
+    console.log('Registering...');
+    const result = await register(username, password, realname);
+    console.log('Register result:', result);
+    if (result) {
+      storeData(result.uid)
+      console.log('Successfully registered');
+      navigation.navigate('Login');
+    } else {
+      console.log('Error occurred: nickname may be duplicated');
+    }
   };
   const goback = () => {
     navigation.navigate('Login'); // 跳转到register页面
@@ -85,7 +104,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 12,
     marginBottom: 10,
-    width:100,
+    width: 100,
   },
   buttonContainer2: {
     elevation: 8,
@@ -94,7 +113,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 12,
     marginBottom: 10,
-    width:100,
+    width: 100,
   },
   buttonText: {
     color: '#fff',
