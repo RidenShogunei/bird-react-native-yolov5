@@ -81,6 +81,9 @@ export default function App() {
   const gophoto=()=>{
     navigation.navigate('Photo')
   }
+  const govideo=()=>{
+    navigation.navigate('Video')
+  }
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
@@ -90,7 +93,7 @@ export default function App() {
       <TouchableOpacity onPress={gophoto} style={[styles.card, { backgroundColor: '#ffc7c7' }]}>
         <Text style={styles.cardText}>拍照搜索</Text>
       </TouchableOpacity>
-      <TouchableOpacity style={[styles.card, { backgroundColor: '#ffe2e2' }]}>
+      <TouchableOpacity onPress={govideo} style={[styles.card, { backgroundColor: '#ffe2e2' }]}>
         <Text style={styles.cardText}>视频搜索</Text>
       </TouchableOpacity>
       </View>

@@ -5,6 +5,7 @@ import Login from './pages/login';
 import Register from './pages/register';
 import Main from './pages/home';
 import Photo from './pages/photo';
+import Video from './pages/video'
 const Stack = createNativeStackNavigator();
 
 function App() {
@@ -17,6 +18,7 @@ function App() {
         <Stack.Screen name="Register" component={Register} />
         <Stack.Screen name="Main" component={Main} />
         <Stack.Screen name="Photo" component={Photo} />
+        <Stack.Screen name="Video" component={Video} />
       </Stack.Navigator>
     </NavigationContainer>
   );

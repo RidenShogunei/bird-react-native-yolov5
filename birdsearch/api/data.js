@@ -74,33 +74,43 @@ export function photo() {
 
 
 export function video() {
-  // options for video picker
-  const options = {
-    title: 'Choose Video',
-    mediaType: 'video',
-  };
-
-  // launch video library
-  launchImageLibrary(options, async (response) => {
-    if (response.didCancel) {
-      console.log('User cancelled video picker');
-    } else if (response.error) {
-      console.log('ImagePicker Error: ', response.error);
-    } else {
-      let formdata = new FormData();
-      formdata.append('video', {
-        uri: response.uri,
-        type: 'video/mp4',
-        name: 'video.mp4',
-      });
-
-      try {
-        const res = await http.post('/video', formdata);
-        return res.data;
-      } catch (err) {
-        console.error(err);
-        return null;
-      }
+  return new Promise((resolve, reject) => {
+    // options for video picker
+    const options = {
+      title: '选择视频',
+      mediaType: 'video', // Set media type as video
+    };
+    // 请求相册权限
+    const hasPermission = requestExternalStoragePermission();
+    if (!hasPermission) {
+      console.log('请先获取读取相册权限');
+      return;
     }
+
+    // launch image library
+    launchImageLibrary(options, async response => {
+      if (response.didCancel) {
+        console.log('User cancelled video picker');
+      } else if (response.error) {
+        console.log('VideoPicker Error: ', response.error);
+      } else {
+        console.log('User choose video picker', response.assets[0].uri);
+        let formdata = new FormData();
+        formdata.append('video', {
+          uri: response.assets[0].uri,
+          type: 'video/mp4',
+          name: 'video.mp4',
+        });
+        try {
+          console.log('try to send', formdata);
+          const res = await http.post('/video', formdata); // Here I suppose you've a video endpoint.
+          console.log('get', res.data);
+          resolve(res.data);  // 当获取到 response 后，解决 Promise
+        } catch (err) {
+          console.error(err);
+          reject(err);  // 如果有错误，拒绝 Promise
+        }
+      }
+    });
   });
 }
