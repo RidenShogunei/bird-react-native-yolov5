@@ -1,79 +1,59 @@
 import React, {useState} from 'react';
-import {Button, Image, View, Alert, Linking} from 'react-native';
-import {launchImageLibrary} from 'react-native-image-picker';
+import {
+  Button,
+  Image,
+  View,
+  Alert,
+  Text,
+  ActivityIndicator,
+} from 'react-native';
 import {photo} from '../api/data';
 
 const App = () => {
-  const [localImageOptions, setLocalImageOptions] = useState([]);
+  const [isLoading, setLoading] = useState(false);
+  const [resultMessage, setResultMessage] = useState('');
+  const [label, setLabel] = useState('');
+  const [speed, setSpeed] = useState('');
 
-  const handleUploadImage = () => {
-    const options = {
-      title: '选择图片', // Set the title of the ImagePicker
-      storageOptions: {
-        skipBackup: true,
-        path: 'images', // Save your photos under "images" directory
-      },
-    };
+  const handleUploadImage = async () => {
+    try {
+      setLoading(true);
+      const result = await photo(); // 等待 photo() 完成
 
-    launchImageLibrary(options, response => {
-      if (res.didCancel) {
-        console.log('User cancelled image picker');
-      } else if (res.error) {
-        console.log('ImagePicker Error: ', res.error);
-        if (res.error.indexOf('Camera permissions not granted') > -1) {
-          alert(('提示信息', 'APP需要使用相机，请打开相机权限允许APP使用'), [
-            {
-              text: '设置',
-              onPress: () => {
-                Linking.openURL('app-settings:').catch(err =>
-                  console.log('error', err),
-                );
-              },
-            },
-            {
-              text: '取消',
-            },
-          ]);
-        }
-        if (res.error.indexOf('Photo library permissions not granted') > -1) {
-          alert('提示信息', 'APP需要使用相册，请打开相册权限允许APP使用', [
-            {
-              text: '设置',
-              onPress: () => {
-                Linking.openURL('app-settings:').catch(err =>
-                  console.log('error', err),
-                );
-              },
-            },
-            {
-              text: '取消',
-            },
-          ]);
-        }
-      } else {
-        let source = {uri: res.uri};
-        setLocalImageOptions([...localImageOptions, source]);
+      if (typeof result === 'string') {
+        const labelMatch = result.match(/[a-zA-Z ]+(?=, [\d.]+ms)/);
+        const speedMatch = result.match(
+          /Speed: [0-9.]+ms pre-process, [0-9.]+ms inference, [0-9.]+ms NMS per image/,
+        );
 
-        try {
-          const serverUri = photo(res.uri);
-          console.log('上传成功', serverUri);
-        } catch (error) {
-          console.log('上传失败: ', error);
+        if (labelMatch) {
+          setLabel(labelMatch[0]);
         }
+
+        if (speedMatch) {
+          setSpeed(speedMatch[0]);
+        }
+
+        setResultMessage(result);
       }
-    });
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-      <Button title="上传图片" onPress={handleUploadImage} />
-      {localImageOptions.map((imageSource, idx) => (
-        <Image
-          key={idx}
-          source={imageSource}
-          style={{width: 200, height: 200, marginTop: 20}}
-        />
-      ))}
+      {isLoading ? (
+        <ActivityIndicator size="large" color="#0000ff" />
+      ) : (
+        <>
+          <Button title="上传图片" onPress={handleUploadImage} />
+          <Text>识别结果：{label}</Text>
+          <Text>{speed}</Text>
+        </>
+      )}
     </View>
   );
 };
