@@ -7,9 +7,11 @@ import Main from './pages/home';
 import Photo from './pages/photo';
 import Video from './pages/video'
 const Stack = createNativeStackNavigator();
-
+import store from "./store";
+import { Provider } from "react-redux";
 function App() {
   return (
+    <Provider store={store}>
     <NavigationContainer>
       <Stack.Navigator
         initialRouteName="Login"
@@ -21,6 +23,7 @@ function App() {
         <Stack.Screen name="Video" component={Video} />
       </Stack.Navigator>
     </NavigationContainer>
+    </Provider>
   );
 }
 

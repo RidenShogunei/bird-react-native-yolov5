@@ -1,6 +1,8 @@
 import axios from 'axios';
 import { launchImageLibrary } from 'react-native-image-picker';
 import { PermissionsAndroid } from 'react-native';
+import store from "../store";
+import { setCompleted, setUncompleted } from '../store/processSlice';
 const http = axios.create({
   baseURL: 'https://chenjinxu.top:6003',
   headers: { 'Content-Type': 'multipart/form-data' }
@@ -31,6 +33,7 @@ async function requestExternalStoragePermission() {
   }
 }
 export function photo() {
+  const { dispatch} = store;
   // 返回一个新的 Promise
   return new Promise((resolve, reject) => {
     // options for image picker
@@ -41,14 +44,17 @@ export function photo() {
     const hasPermission = requestExternalStoragePermission();
     if (!hasPermission) {
       console.log('请先获取读取相册权限');
+      dispatch(setUncompleted());
       return;
     }
 
     // launch image library
     launchImageLibrary(options, async response => {
       if (response.didCancel) {
+        dispatch(setUncompleted());
         console.log('User cancelled image picker');
       } else if (response.error) {
+        dispatch(setUncompleted());
         console.log('ImagePicker Error: ', response.error);
       } else {
         console.log('User choose image picker', response.assets[0].uri);
@@ -74,6 +80,7 @@ export function photo() {
 
 
 export function video() {
+  const { dispatch} = store;
   return new Promise((resolve, reject) => {
     // options for video picker
     const options = {
@@ -83,6 +90,7 @@ export function video() {
     // 请求相册权限
     const hasPermission = requestExternalStoragePermission();
     if (!hasPermission) {
+      dispatch(setUncompleted());
       console.log('请先获取读取相册权限');
       return;
     }
@@ -90,8 +98,10 @@ export function video() {
     // launch image library
     launchImageLibrary(options, async response => {
       if (response.didCancel) {
+        dispatch(setUncompleted());
         console.log('User cancelled video picker');
       } else if (response.error) {
+        dispatch(setUncompleted());
         console.log('VideoPicker Error: ', response.error);
       } else {
         console.log('User choose video picker', response.assets[0].uri);
